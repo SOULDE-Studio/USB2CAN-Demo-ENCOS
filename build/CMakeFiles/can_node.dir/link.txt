@@ -1,0 +1,1 @@
+/usr/bin/c++    -O3   CMakeFiles/can_node.dir/src/Tangair_usb2can.cpp.o CMakeFiles/can_node.dir/src/can_node.cpp.o  -o can_node   -L/home/thj/USB2CAN-Demo-ENCOS/can  -Wl,-rpath,/home/thj/USB2CAN-Demo-ENCOS/can -lpthread -lpthread -lusb_can -ldl 

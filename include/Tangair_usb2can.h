@@ -149,8 +149,8 @@ public:
 	/*****************************************************************************************************/
 	// 电机基本操作变量
 	FrameInfo txMsg_CAN = {
-		.canID = 0,
-		.frameType = EXTENDED,
+		.canID = 0x7FF,
+		.frameType = STANDARD,
 		.dataLength = 8,
 	};
 
@@ -174,17 +174,23 @@ public:
 	void USB2CAN_CAN_Bus_inti_set(USB2CAN_CAN_Bus_Struct* Leg_Data);
 	void USB2CAN_CAN_Bus_Init();
 
-	void Motor_Enable(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data);
-
-	void Motor_Disable(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data);
+	
+	
+    void Motor_ModeSetting(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data);   
 
 	void Motor_Zore(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data);
+
+    void Motor_IDSetting(int32_t dev, uint8_t channel,uint8_t new_id);
+
+    void Motor_IDReading(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data);
+
+	void Motor_Passive(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data);
+
+	void Motor_Disable(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data);
 
 	void CAN_Send_Control(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data); // 运控�??,CAN1=CAN_TX_MAILBOX0,CAN2=CAN_TX_MAILBOX1
 
 	void Motor_Passive_SET(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data);
-
-	void ENABLE_ALL_MOTOR(int delay_us);
 
 	void DISABLE_ALL_MOTOR(int delay_us);
 

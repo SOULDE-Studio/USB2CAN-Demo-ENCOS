@@ -117,26 +117,23 @@ void Tangair_usb2can::CAN_RX_device_0_thread()
         {
             can_dev0_rx_count++;
             // 解码
-            CAN_DEV0_RX.master_id = (info_rx.canID) & 0xff;
-            CAN_DEV0_RX.motor_id = (info_rx.canID >> 8) & 0xff;
-            CAN_DEV0_RX.fault_message = (info_rx.canID >> 16) & 0x3f;
-            CAN_DEV0_RX.motor_state = (info_rx.canID >> 21) & 0x03;
-            CAN_DEV0_RX.mode = (info_rx.canID >> 24) & 0x1f;
-
-            CAN_DEV0_RX.current_position = (data_rx[0] << 8) | (data_rx[1]);
-            CAN_DEV0_RX.current_speed = (data_rx[2] << 8) | (data_rx[3]);
-            CAN_DEV0_RX.current_torque = (data_rx[4] << 8) | (data_rx[5]);
-            CAN_DEV0_RX.current_temp = (data_rx[6] << 8) | (data_rx[7]);
+             //解码
+            CAN_DEV0_RX.ID = info_rx.canID;
+            CAN_DEV0_RX.ack_status = (data_rx[0] >> 5);//(61-63) 报文类
+            CAN_DEV0_RX.error = (data_rx[0]) & 0x1F;//(56-60) 错误信息
+            CAN_DEV0_RX.current_position = (data_rx[1] << 8) | (data_rx[2]);//(40-55) 电机位置
+            CAN_DEV0_RX.current_speed = data_rx[3] << 4 | (data_rx[4] & 0xF0) >> 4;//(28-39) 电机速度
+            CAN_DEV0_RX.current_electric = (data_rx[4] & 0x0F) << 8 | data_rx[5];//(16-27) 实际电流
+            CAN_DEV0_RX.current_temp = (data_rx[6] - 50) / 2; //(8-15) 电机温度
 
             // 转换
-            CAN_DEV0_RX.current_position_f = uint_to_float(CAN_DEV0_RX.current_position, (-4.0 * PI), (4.0 * PI), 16);
-            CAN_DEV0_RX.current_speed_f = uint_to_float(CAN_DEV0_RX.current_speed, (-15.0), (15.0), 16);    // 灵足电机,此处为RS04参数
-            CAN_DEV0_RX.current_torque_f = uint_to_float(CAN_DEV0_RX.current_torque, (-120.0), (120.0), 16);// 灵足电机,此处为RS04参数
-            CAN_DEV0_RX.current_temp_f = (float)CAN_DEV0_RX.current_temp / 10;                              //温度单位为摄氏度
+             CAN_DEV0_RX.current_position_f = uint_to_float(CAN_DEV0_RX.current_position, P_MIN, P_MAX, 16);
+             CAN_DEV0_RX.current_speed_f = uint_to_float(CAN_DEV0_RX.current_speed ,V_MIN, V_MAX, 12);
+             CAN_DEV0_RX.current_electric_f = uint_to_float(CAN_DEV0_RX.current_electric, I_MIN, I_MAX, 12);
 
             if (channel == 1) // 模块0，can1
             {
-                switch (CAN_DEV0_RX.motor_id)
+                switch (CAN_DEV0_RX.ID)
                 {
                 case 1:
                 {
@@ -163,7 +160,7 @@ void Tangair_usb2can::CAN_RX_device_0_thread()
             }
             else if (channel == 2) // 模块0，can2
             {
-                switch (CAN_DEV0_RX.motor_id)
+                switch (CAN_DEV0_RX.ID)
                 {
                 case 1:
                 {
@@ -215,26 +212,22 @@ void Tangair_usb2can::CAN_RX_device_1_thread()
             can_dev1_rx_count++;
 
             // 解码
-            CAN_DEV1_RX.master_id = (info_rx.canID) & 0xff;
-            CAN_DEV1_RX.motor_id = (info_rx.canID >> 8) & 0xff;
-            CAN_DEV1_RX.fault_message = (info_rx.canID >> 16) & 0x3f;
-            CAN_DEV1_RX.motor_state = (info_rx.canID >> 21) & 0x03;
-            CAN_DEV1_RX.mode = (info_rx.canID >> 24) & 0x1f;
-
-            CAN_DEV1_RX.current_position = (data_rx[0] << 8) | (data_rx[1]);
-            CAN_DEV1_RX.current_speed = (data_rx[2] << 8) | (data_rx[3]);
-            CAN_DEV1_RX.current_torque = (data_rx[4] << 8) | (data_rx[5]);
-            CAN_DEV1_RX.current_temp = (data_rx[6] << 8) | (data_rx[7]);
+             CAN_DEV1_RX.ID = info_rx.canID;
+             CAN_DEV1_RX.ack_status = (data_rx[0] >> 5);//(61-63) 报文类
+             CAN_DEV1_RX.error = (data_rx[0]) & 0x1F;//(56-60) 错误信息
+             CAN_DEV1_RX.current_position = (data_rx[1] << 8) | (data_rx[2]);//(40-55) 电机位置
+             CAN_DEV1_RX.current_speed = data_rx[3] << 4 | (data_rx[4] & 0xF0) >> 4;//(28-39) 电机速度
+             CAN_DEV1_RX.current_electric = (data_rx[4] & 0x0F) << 8 | data_rx[5];//(16-27) 实际电流
+             CAN_DEV1_RX.current_temp = (data_rx[6] - 50) / 2; //(8-15) 电机温度
 
             // 转换
-            CAN_DEV1_RX.current_position_f = uint_to_float(CAN_DEV1_RX.current_position, (-4.0 * PI), (4.0 * PI), 16);
-            CAN_DEV1_RX.current_speed_f = uint_to_float(CAN_DEV1_RX.current_speed, (-15.0), (15.0), 16);    // 灵足电机,此处为RS04参数
-            CAN_DEV1_RX.current_torque_f = uint_to_float(CAN_DEV1_RX.current_torque, (-120.0), (120.0), 16);// 灵足电机,此处为RS04参数
-            CAN_DEV1_RX.current_temp_f = (float)CAN_DEV1_RX.current_temp / 10;
+            CAN_DEV1_RX.current_position_f = uint_to_float(CAN_DEV1_RX.current_position, P_MIN, P_MAX, 16);
+            CAN_DEV1_RX.current_speed_f = uint_to_float(CAN_DEV1_RX.current_speed ,V_MIN, V_MAX, 12);
+            CAN_DEV1_RX.current_electric_f = uint_to_float(CAN_DEV1_RX.current_electric, I_MIN, I_MAX, 12);
 
             if (channel == 1)  // 模块1，can1
             {
-                switch (CAN_DEV1_RX.motor_id)
+                switch (CAN_DEV1_RX.ID)
                 {
                 case 1:
                 {
@@ -260,7 +253,7 @@ void Tangair_usb2can::CAN_RX_device_1_thread()
             }
             else if (channel == 2)  // 模块1，can2
             {
-                switch (CAN_DEV1_RX.motor_id)
+                switch (CAN_DEV1_RX.ID)
                 {
                 case 1:
                 {
@@ -377,9 +370,7 @@ void Tangair_usb2can::CAN_TX_test_thread()
         USB2CAN1_CAN_Bus_2.ID_3_motor_send.kd = 1;
     }
    
-    //使能所有电机
-    ENABLE_ALL_MOTOR(100);
-
+    
     while (running_)
     {
         //电机控制参数配置，单纯给速度，给ID为1的电机，设置键盘速度，速度单位为rad/s
@@ -476,43 +467,19 @@ void Tangair_usb2can::USB2CAN_CAN_Bus_Init()
     USB2CAN_CAN_Bus_inti_set(&USB2CAN1_CAN_Bus_2);
 }
 
-/// @brief 使能
+
+/// @brief 设置模式
 /// @param dev
 /// @param channel
 /// @param Motor_Data
-void Tangair_usb2can::Motor_Enable(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data)
+void Tangair_usb2can::Motor_ModeSetting(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data)
 {
-    Motor_Data_Single.id = Motor_Data->id;
-    Motor_Data_Single.exdata = 0xfd; // 主机ID
-    Motor_Data_Single.mode = 3;
-    Motor_Data_Single.res = 0x04;
-
-    txMsg_CAN.canID = ((Motor_Data_Single.id & 0xff) | ((Motor_Data_Single.exdata & 0xffff) << 8) | ((Motor_Data_Single.mode & 0x1f) << 24));
-
-    for (int i = 0; i < 8; i++)
-    {
-        Data_CAN[i] = 0;
-    }
-    sendUSBCAN(dev, channel, &txMsg_CAN, Data_CAN);
-}
-
-/// @brief 电机失能
-/// @param dev
-/// @param channel
-/// @param Motor_Data
-void Tangair_usb2can::Motor_Disable(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data)
-{
-
-    Motor_Data_Single.id = Motor_Data->id;
-    Motor_Data_Single.exdata = 0xfd; // 主机ID
-    Motor_Data_Single.mode = 4;
-    Motor_Data_Single.res = 0x04;
-    txMsg_CAN.canID = ((Motor_Data_Single.id & 0xff) | ((Motor_Data_Single.exdata & 0xffff) << 8) | ((Motor_Data_Single.mode & 0x1f) << 24));
-    for (int i = 0; i < 8; i++)
-    {
-        Data_CAN[i] = 0;
-    }
-    Data_CAN[0] = 1;
+    
+    txMsg_CAN.dataLength=4;
+    Data_CAN[0]=Motor_Data->id>>8;
+    Data_CAN[1]=Motor_Data->id&0xff;
+    Data_CAN[2]=0x00;
+    Data_CAN[3]=0x02;
     sendUSBCAN(dev, channel, &txMsg_CAN, Data_CAN);
 }
 
@@ -522,17 +489,44 @@ void Tangair_usb2can::Motor_Disable(int32_t dev, uint8_t channel, Motor_CAN_Send
 /// @param Motor_Data
 void Tangair_usb2can::Motor_Zore(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data)
 {
-    Motor_Data_Single.id = Motor_Data->id;
-    Motor_Data_Single.exdata = 0; // 主机ID
-    Motor_Data_Single.mode = 6;
-    Motor_Data_Single.res = 0x04;
-    txMsg_CAN.canID = ((Motor_Data_Single.id & 0xff) | ((Motor_Data_Single.exdata & 0xffff) << 8) | ((Motor_Data_Single.mode & 0x1f) << 24));
+    
+    txMsg_CAN.dataLength=4;
+    Data_CAN[0]=Motor_Data->id>>8;
+    Data_CAN[1]=Motor_Data->id&0xff;
+    Data_CAN[2]=0x00;
+    Data_CAN[3]=0x03;
+    sendUSBCAN(dev, channel, &txMsg_CAN, Data_CAN);
+}
 
-    for (int i = 0; i < 8; i++)
-    {
-        Data_CAN[i] = 0;
-    }
-    Data_CAN[0] = 1;
+/// @brief 设置ID？？？？？？？？？？？？？？？？？？？？？？？？？？？？
+/// @param dev
+/// @param channel
+/// @param Motor_Data
+ void Tangair_usb2can::Motor_IDSetting(int32_t dev, uint8_t channel,uint8_t new_id)
+{
+        txMsg_CAN.dataLength=6;
+        Data_CAN[0]=0x01>>8;
+        Data_CAN[1]=0x01&0xff;
+        Data_CAN[2]=0x00;
+        Data_CAN[3]=0x04;
+        Data_CAN[4]=new_id>>8;;
+        Data_CAN[5]=new_id&0xff;
+    sendUSBCAN(dev, channel, &txMsg_CAN, Data_CAN);
+
+}
+
+/// @brief 读取ID
+/// @param dev
+/// @param channel
+/// @param Motor_Data
+void Tangair_usb2can::Motor_IDReading(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data)
+{
+    
+    txMsg_CAN.dataLength=4;
+    Data_CAN[0]=0xFF;
+    Data_CAN[1]=0xFF;
+    Data_CAN[2]=0x00;
+    Data_CAN[3]=0x82;
     sendUSBCAN(dev, channel, &txMsg_CAN, Data_CAN);
 }
 
@@ -544,30 +538,33 @@ void Tangair_usb2can::CAN_Send_Control(int32_t dev, uint8_t channel, Motor_CAN_S
 {
     // 运控模式专用的局部变
     FrameInfo txMsg_Control = {
-        .canID = 0,
-        .frameType = EXTENDED,
+        .canID = Motor_Data->id,
+        .frameType = STANDARD,
         .dataLength = 8,
     };
     uint8_t Data_CAN_Control[8];
 
-    Motor_Data->mode = 1;
-    Motor_Data->res = 0x04;
+    if(Motor_Data->kp>KP_MAX) Motor_Data->kp=KP_MAX;
+			else if(Motor_Data->kp<KP_MIN) Motor_Data->kp=KP_MIN;
+		if(Motor_Data->kd>KD_MAX ) Motor_Data->kd=KD_MAX;
+			else if(Motor_Data->kd<KD_MIN) Motor_Data->kd=KD_MIN;
+		if(Motor_Data->position>P_MAX)	Motor_Data->position=P_MAX;
+			else if(Motor_Data->position<P_MIN) Motor_Data->position=P_MIN;
+		if(Motor_Data->speed>V_MAX)	Motor_Data->speed=V_MAX;
+			else if(Motor_Data->speed<V_MIN) Motor_Data->speed=V_MIN;
+		if(Motor_Data->torque>T_MAX)	Motor_Data->torque=T_MAX;
+			else if(Motor_Data->torque<T_MIN) Motor_Data->torque=T_MIN;
 
-    Motor_Data->exdata = float_to_uint(Motor_Data->torque, T_MIN, T_MAX, 16); // 用于补充Data[8]长度
 
-    txMsg_Control.canID = ((Motor_Data->id & 0xff) | ((Motor_Data->exdata & 0xffff) << 8) | ((Motor_Data->mode & 0x1f) << 24));
 
-    Data_CAN_Control[0] = float_to_uint(Motor_Data->position, P_MIN, P_MAX, 16) >> 8;
-    Data_CAN_Control[1] = float_to_uint(Motor_Data->position, P_MIN, P_MAX, 16);
-
-    Data_CAN_Control[2] = float_to_uint(Motor_Data->speed, V_MIN, V_MAX, 16) >> 8;
-    Data_CAN_Control[3] = float_to_uint(Motor_Data->speed, V_MIN, V_MAX, 16);
- 
-
-    Data_CAN_Control[4] = float_to_uint(Motor_Data->kp, KP_MIN, KP_MAX, 16) >> 8;
-    Data_CAN_Control[5] = float_to_uint(Motor_Data->kp, KP_MIN, KP_MAX, 16);
-    Data_CAN_Control[6] = float_to_uint(Motor_Data->kd, KD_MIN, KD_MAX, 16) >> 8;
-    Data_CAN_Control[7] = float_to_uint(Motor_Data->kd, KD_MIN, KD_MAX, 16);
+    Data_CAN_Control[0]=0x00|(float_to_uint(Motor_Data->kp, KP_MIN, KP_MAX, 12)>>7);//kp5;
+    Data_CAN_Control[1]=((float_to_uint(Motor_Data->kp, KP_MIN, KP_MAX, 12)&0x7F)<<1)|((float_to_uint(Motor_Data->kd, KD_MIN, KD_MAX, 9)&0x100)>>8);//kp7+kd1;
+    Data_CAN_Control[2]= float_to_uint(Motor_Data->kd, KD_MIN, KD_MAX, 9)&0xFF;
+    Data_CAN_Control[3]=float_to_uint(Motor_Data->position, P_MIN, P_MAX, 16)>>8;
+    Data_CAN_Control[4]=float_to_uint(Motor_Data->position, P_MIN, P_MAX, 16)&0xFF;
+    Data_CAN_Control[5]=float_to_uint(Motor_Data->speed, V_MIN, V_MAX, 12)>>4;
+    Data_CAN_Control[6]=(float_to_uint(Motor_Data->speed, V_MIN, V_MAX, 12)&0x0F)<<4|(float_to_uint(Motor_Data->torque, T_MIN, T_MAX, 12)>>8);
+    Data_CAN_Control[7]=float_to_uint(Motor_Data->torque, T_MIN, T_MAX, 12)&0xff;
 
     int ret = sendUSBCAN(dev, channel, &txMsg_Control, Data_CAN_Control);
 
@@ -581,54 +578,26 @@ void Tangair_usb2can::Motor_Passive_SET(int32_t dev, uint8_t channel, Motor_CAN_
 {
     Motor_Data->speed = 0;
     Motor_Data->kp = 0;
-    Motor_Data->kd = 2.0;
+    Motor_Data->kd = 3.0;
     Motor_Data->torque = 0;
 
     CAN_Send_Control(dev, channel, Motor_Data);
 }
 
-void Tangair_usb2can::ENABLE_ALL_MOTOR(int delay_us)
+/// @brief 电机失能
+/// @param dev
+/// @param channel
+/// @param Motor_Data
+void Tangair_usb2can::Motor_Disable(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data)
 {
-    // 右前腿
-    Motor_Enable(USB2CAN0_, 1, &USB2CAN0_CAN_Bus_1.ID_1_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 右后腿
-    Motor_Enable(USB2CAN1_, 1, &USB2CAN1_CAN_Bus_1.ID_1_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 左前腿
-    Motor_Enable(USB2CAN0_, 2, &USB2CAN0_CAN_Bus_2.ID_1_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 左后腿
-    Motor_Enable(USB2CAN1_, 2, &USB2CAN1_CAN_Bus_2.ID_1_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
 
-    // 右前腿
-    Motor_Enable(USB2CAN0_, 1, &USB2CAN0_CAN_Bus_1.ID_2_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 右后腿
-    Motor_Enable(USB2CAN1_, 1, &USB2CAN1_CAN_Bus_1.ID_2_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 左前腿
-    Motor_Enable(USB2CAN0_, 2, &USB2CAN0_CAN_Bus_2.ID_2_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 左后腿
-    Motor_Enable(USB2CAN1_, 2, &USB2CAN1_CAN_Bus_2.ID_2_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
+    Motor_Data->speed = 0;
+    Motor_Data->position = 0;
+    Motor_Data->kp = 0;
+    Motor_Data->kd = 0;
+    Motor_Data->torque = 0;
 
-    // 右前腿
-    Motor_Enable(USB2CAN0_, 1, &USB2CAN0_CAN_Bus_1.ID_3_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 右后腿
-    Motor_Enable(USB2CAN1_, 1, &USB2CAN1_CAN_Bus_1.ID_3_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 左前腿
-    Motor_Enable(USB2CAN0_, 2, &USB2CAN0_CAN_Bus_2.ID_3_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 左后腿
-    Motor_Enable(USB2CAN1_, 2, &USB2CAN1_CAN_Bus_2.ID_3_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-
-   
+    CAN_Send_Control(dev, channel, Motor_Data);
 }
 
 void Tangair_usb2can::Tangair_usb2can::DISABLE_ALL_MOTOR(int delay_us)
