@@ -292,8 +292,19 @@ void Tangair_usb2can::CAN_TX_test_thread()
 {
     //发送计数
     uint32_t tx_count = 0;
-    //键盘输入速度
     speed_input = 2;
+
+    /*****************************************控制频率测试**************************************************/
+    // int can_dev0_rx_count_last=0;
+    // float max_band=0;
+    // int nice_time = 0;
+    // float nice_lost_rate = 0;
+    // std::chrono::time_point<std::chrono::system_clock, std::chrono::microseconds> tpMill =
+    //     std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::system_clock::now());
+    // time_t tp_lst = tpMill.time_since_epoch().count();;
+    // //键盘输入速度
+    // speed_input = 230;
+    /*****************************************控制频率测试**************************************************/
     //电机控制参数配置，单纯给速度
     {
         
@@ -301,7 +312,7 @@ void Tangair_usb2can::CAN_TX_test_thread()
         USB2CAN0_CAN_Bus_1.ID_1_motor_send.speed = 2;
         USB2CAN0_CAN_Bus_1.ID_1_motor_send.torque = 0;
         USB2CAN0_CAN_Bus_1.ID_1_motor_send.kp = 0;
-        USB2CAN0_CAN_Bus_1.ID_1_motor_send.kd = 1;
+        USB2CAN0_CAN_Bus_1.ID_1_motor_send.kd = 2;
 
         USB2CAN0_CAN_Bus_1.ID_2_motor_send.position = 0;
         USB2CAN0_CAN_Bus_1.ID_2_motor_send.speed = 2;
@@ -383,13 +394,21 @@ void Tangair_usb2can::CAN_TX_test_thread()
             
         }
 
-        // CAN发送,发送频率为1000hz,实际间隔约为950us
-        CAN_TX_ALL_MOTOR(100);
-            
-
+        // CAN发送,发送频率为1200hz,实际间隔约为780us
+        CAN_TX_ALL_MOTOR(65); 
+        
         // CAN发送计数
         tx_count++;
-      
+/*****************************************控制频率测试**************************************************/
+        //  CAN_Send_Control(USB2CAN0_, 1, &USB2CAN0_CAN_Bus_1.ID_1_motor_send);
+        //  std::this_thread::sleep_for(std::chrono::microseconds(speed_input));
+          
+        // if (tx_count % 10000 == 0)
+        // {
+        //     if(speed_input>180)
+        //       speed_input--;  
+        // }
+/*****************************************控制频率测试**************************************************/        
     
         std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> tpMill =
             std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
@@ -405,6 +424,34 @@ void Tangair_usb2can::CAN_TX_test_thread()
                       << "USB2CAN1_CAN2.current_speed_f=  " << USB2CAN1_CAN_Bus_2.ID_1_motor_recieve.current_speed_f << "  rad/s" << std::endl;
             std::cout << "can_tx_count=" << tx_count << "     " << "can_dev0_rx_count=" << can_dev0_rx_count << "     "<< "can_dev1_rx_count=" << can_dev1_rx_count << "     "
                       << "TIME=" << (tp % 1000000) / 1000 << "." << tp % 1000 << "s" << std::endl;
+
+/*****************************************控制频率测试**************************************************/  
+            // std::chrono::time_point<std::chrono::system_clock, std::chrono::microseconds> tpMill =
+            // std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::system_clock::now());
+            // time_t tp = tpMill.time_since_epoch().count();
+
+            // std::cout << "can_tx_count=" << 1000 << "     " << "can_dev0_rx_count=" << can_dev0_rx_count-can_dev0_rx_count_last 
+            //           << "     "
+            //           << "loss rate=" <<(1-(float)(can_dev0_rx_count-can_dev0_rx_count_last )/1000.0)*100<< "%     "
+            //           <<std::endl
+            //           << "time_input=" <<speed_input<< "us" << "      "<<"time_real=" << (float)(tp - tp_lst)/1000 << "us" 
+            //           <<std::endl
+            //           << "Freq_target=" <<1000000/(float)speed_input<<""<< "HZ" << "      "<<"Freq_real=" << 1000000000.0/(float)(tp - tp_lst) << "HZ" ;
+            //           float band=((can_dev0_rx_count-can_dev0_rx_count_last )/1000.0)*1000000000.0/(float)(tp - tp_lst);
+            //           if(band>max_band){
+            //             max_band=band;
+            //             nice_time=(float)(tp - tp_lst)/1000; 
+            //             nice_lost_rate=(1-(float)(can_dev0_rx_count-can_dev0_rx_count_last )/1000.0)*100;
+            //           }
+
+            // std::cout <<"     band ="<<band<<"HZ"<< "    max_band="<<max_band<<"HZ"<<"     nice_time="<<nice_time<<"us"<<"     nice_lost_rate="<<nice_lost_rate<<"%"
+            //           << std::endl<< std::endl;
+
+            // tp_lst = tp;
+            // can_dev0_rx_count_last = can_dev0_rx_count;        
+/*****************************************控制频率测试**************************************************/  
+
+
         }
     }
 

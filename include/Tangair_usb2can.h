@@ -22,7 +22,6 @@
 float uint_to_float(int x_int, float x_min, float x_max, int bits);
 int float_to_uint(float x, float x_min, float x_max, int bits);
 
-// 灵足电机,此处为RS04参数
 #define P_MIN -12.5f
 #define P_MAX 12.5f
 #define V_MIN -18.0f
@@ -31,10 +30,10 @@ int float_to_uint(float x, float x_min, float x_max, int bits);
 #define KP_MAX 500.0f
 #define KD_MIN 0.0f
 #define KD_MAX 5.0f
-#define T_MIN -30.0f
-#define T_MAX 30.0f
-#define I_MIN -30.0f
-#define I_MAX 30.0f
+#define T_MIN -90.0f
+#define T_MAX 90.0f
+#define I_MIN -60.0f
+#define I_MAX 60.0f
 
 
 
