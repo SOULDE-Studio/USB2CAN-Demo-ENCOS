@@ -384,7 +384,7 @@ void Tangair_usb2can::CAN_TX_test_thread()
         }
 
         // CAN发送,发送频率为1000hz,实际间隔约为950us
-        CAN_TX_ALL_MOTOR(75);
+        CAN_TX_ALL_MOTOR(100);
             
 
         // CAN发送计数
@@ -498,7 +498,7 @@ void Tangair_usb2can::Motor_Zore(int32_t dev, uint8_t channel, Motor_CAN_Send_St
     sendUSBCAN(dev, channel, &txMsg_CAN, Data_CAN);
 }
 
-/// @brief 设置ID？？？？？？？？？？？？？？？？？？？？？？？？？？？？
+/// @brief 设置ID
 /// @param dev
 /// @param channel
 /// @param Motor_Data
@@ -544,7 +544,14 @@ void Tangair_usb2can::CAN_Send_Control(int32_t dev, uint8_t channel, Motor_CAN_S
     };
     uint8_t Data_CAN_Control[8];
 
-    if(Motor_Data->kp>KP_MAX) Motor_Data->kp=KP_MAX;
+    
+	int kp_int;
+	int kd_int;
+	int pos_int;
+	int spd_int;
+	int tor_int;
+
+	if(Motor_Data->kp>KP_MAX) Motor_Data->kp=KP_MAX;
 			else if(Motor_Data->kp<KP_MIN) Motor_Data->kp=KP_MIN;
 		if(Motor_Data->kd>KD_MAX ) Motor_Data->kd=KD_MAX;
 			else if(Motor_Data->kd<KD_MIN) Motor_Data->kd=KD_MIN;
@@ -555,16 +562,20 @@ void Tangair_usb2can::CAN_Send_Control(int32_t dev, uint8_t channel, Motor_CAN_S
 		if(Motor_Data->torque>T_MAX)	Motor_Data->torque=T_MAX;
 			else if(Motor_Data->torque<T_MIN) Motor_Data->torque=T_MIN;
 
+		kp_int = float_to_uint(Motor_Data->kp, KP_MIN, KP_MAX, 12);
+		kd_int = float_to_uint(Motor_Data->kd, KD_MIN, KD_MAX, 9);
+		pos_int = float_to_uint(Motor_Data->position, P_MIN, P_MAX, 16);
+		spd_int = float_to_uint(Motor_Data->speed, V_MIN, V_MAX, 12);
+		tor_int = float_to_uint(Motor_Data->torque, T_MIN, T_MAX, 12);
 
-
-    Data_CAN_Control[0]=0x00|(float_to_uint(Motor_Data->kp, KP_MIN, KP_MAX, 12)>>7);//kp5;
-    Data_CAN_Control[1]=((float_to_uint(Motor_Data->kp, KP_MIN, KP_MAX, 12)&0x7F)<<1)|((float_to_uint(Motor_Data->kd, KD_MIN, KD_MAX, 9)&0x100)>>8);//kp7+kd1;
-    Data_CAN_Control[2]= float_to_uint(Motor_Data->kd, KD_MIN, KD_MAX, 9)&0xFF;
-    Data_CAN_Control[3]=float_to_uint(Motor_Data->position, P_MIN, P_MAX, 16)>>8;
-    Data_CAN_Control[4]=float_to_uint(Motor_Data->position, P_MIN, P_MAX, 16)&0xFF;
-    Data_CAN_Control[5]=float_to_uint(Motor_Data->speed, V_MIN, V_MAX, 12)>>4;
-    Data_CAN_Control[6]=(float_to_uint(Motor_Data->speed, V_MIN, V_MAX, 12)&0x0F)<<4|(float_to_uint(Motor_Data->torque, T_MIN, T_MAX, 12)>>8);
-    Data_CAN_Control[7]=float_to_uint(Motor_Data->torque, T_MIN, T_MAX, 12)&0xff;
+          Data_CAN_Control[0]=0x00|(kp_int>>7);//kp5;
+          Data_CAN_Control[1]=((kp_int&0x7F)<<1)|((kd_int&0x100)>>8);//kp7+kd1;
+          Data_CAN_Control[2]=kd_int&0xFF;
+          Data_CAN_Control[3]=pos_int>>8;
+          Data_CAN_Control[4]=pos_int&0xFF;
+          Data_CAN_Control[5]=spd_int>>4;
+          Data_CAN_Control[6]=(spd_int&0x0F)<<4|(tor_int>>8);
+          Data_CAN_Control[7]=tor_int&0xff;
 
     int ret = sendUSBCAN(dev, channel, &txMsg_Control, Data_CAN_Control);
 
