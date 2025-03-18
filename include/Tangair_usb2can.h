@@ -175,14 +175,7 @@ public:
 
 	
 	
-    void Motor_ModeSetting(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data);   
-
-	void Motor_Zore(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data);
-
-    void Motor_IDSetting(int32_t dev, uint8_t channel,uint8_t new_id);
-
-    void Motor_IDReading(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data);
-
+    
 	void Motor_Passive(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data);
 
 	void Motor_Disable(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data);
@@ -193,7 +186,6 @@ public:
 
 	void DISABLE_ALL_MOTOR(int delay_us);
 
-	void ZERO_ALL_MOTOR(int delay_us);
 
 	void PASSIVE_ALL_MOTOR(int delay_us);
 

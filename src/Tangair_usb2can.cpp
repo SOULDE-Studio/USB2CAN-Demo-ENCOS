@@ -465,68 +465,6 @@ void Tangair_usb2can::USB2CAN_CAN_Bus_Init()
 }
 
 
-/// @brief 设置模式
-/// @param dev
-/// @param channel
-/// @param Motor_Data
-void Tangair_usb2can::Motor_ModeSetting(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data)
-{
-    
-    txMsg_CAN.dataLength=4;
-    Data_CAN[0]=Motor_Data->id>>8;
-    Data_CAN[1]=Motor_Data->id&0xff;
-    Data_CAN[2]=0x00;
-    Data_CAN[3]=0x02;
-    sendUSBCAN(dev, channel, &txMsg_CAN, Data_CAN);
-}
-
-/// @brief 设置零点
-/// @param dev
-/// @param channel
-/// @param Motor_Data
-void Tangair_usb2can::Motor_Zore(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data)
-{
-    
-    txMsg_CAN.dataLength=4;
-    Data_CAN[0]=Motor_Data->id>>8;
-    Data_CAN[1]=Motor_Data->id&0xff;
-    Data_CAN[2]=0x00;
-    Data_CAN[3]=0x03;
-    sendUSBCAN(dev, channel, &txMsg_CAN, Data_CAN);
-}
-
-/// @brief 设置ID
-/// @param dev
-/// @param channel
-/// @param Motor_Data
- void Tangair_usb2can::Motor_IDSetting(int32_t dev, uint8_t channel,uint8_t new_id)
-{
-        txMsg_CAN.dataLength=6;
-        Data_CAN[0]=0x01>>8;
-        Data_CAN[1]=0x01&0xff;
-        Data_CAN[2]=0x00;
-        Data_CAN[3]=0x04;
-        Data_CAN[4]=new_id>>8;;
-        Data_CAN[5]=new_id&0xff;
-    sendUSBCAN(dev, channel, &txMsg_CAN, Data_CAN);
-
-}
-
-/// @brief 读取ID
-/// @param dev
-/// @param channel
-/// @param Motor_Data
-void Tangair_usb2can::Motor_IDReading(int32_t dev, uint8_t channel, Motor_CAN_Send_Struct *Motor_Data)
-{
-    
-    txMsg_CAN.dataLength=4;
-    Data_CAN[0]=0xFF;
-    Data_CAN[1]=0xFF;
-    Data_CAN[2]=0x00;
-    Data_CAN[3]=0x82;
-    sendUSBCAN(dev, channel, &txMsg_CAN, Data_CAN);
-}
-
 /// @brief 电机控制
 /// @param dev 模块设备号
 /// @param channel can1或者can2
@@ -652,50 +590,6 @@ void Tangair_usb2can::Tangair_usb2can::DISABLE_ALL_MOTOR(int delay_us)
  
 }
 
-void Tangair_usb2can::ZERO_ALL_MOTOR(int delay_us)
-{
-
-    // 右前腿
-    Motor_Zore(USB2CAN0_, 1, &USB2CAN0_CAN_Bus_1.ID_1_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 右后腿
-    Motor_Zore(USB2CAN1_, 1, &USB2CAN1_CAN_Bus_1.ID_1_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 左前腿
-    Motor_Zore(USB2CAN0_, 2, &USB2CAN0_CAN_Bus_2.ID_1_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 左后腿
-    Motor_Zore(USB2CAN1_, 2, &USB2CAN1_CAN_Bus_2.ID_1_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-
-    // 右前腿
-    Motor_Zore(USB2CAN0_, 1, &USB2CAN0_CAN_Bus_1.ID_2_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 右后腿
-    Motor_Zore(USB2CAN1_, 1, &USB2CAN1_CAN_Bus_1.ID_2_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 左前腿
-    Motor_Zore(USB2CAN0_, 2, &USB2CAN0_CAN_Bus_2.ID_2_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 左后腿
-    Motor_Zore(USB2CAN1_, 2, &USB2CAN1_CAN_Bus_2.ID_2_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-
-    // 右前腿
-    Motor_Zore(USB2CAN0_, 1, &USB2CAN0_CAN_Bus_1.ID_3_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 右后腿
-    Motor_Zore(USB2CAN1_, 1, &USB2CAN1_CAN_Bus_1.ID_3_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 左前腿
-    Motor_Zore(USB2CAN0_, 2, &USB2CAN0_CAN_Bus_2.ID_3_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-    // 左后腿
-    Motor_Zore(USB2CAN1_, 2, &USB2CAN1_CAN_Bus_2.ID_3_motor_send);
-    std::this_thread::sleep_for(std::chrono::microseconds(delay_us)); // 单位us
-
-   
-}
 
 void Tangair_usb2can::PASSIVE_ALL_MOTOR(int delay_us)
 {
